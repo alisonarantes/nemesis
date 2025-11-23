@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEMESIS COMPANION</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="scanlines"></div>
+<div class="overlay-vignette"></div>
+
+<div class="container">
+    <header>
+        <div class="header-content">
+            <h1>NEMESIS <span class="sys-text">COMPANION</span></h1>
+            <span class="version">SYS.VER.7.0 (LIVE DECK)</span>
+        </div>
+        <button id="btn-reset" class="btn-danger small">REBOOT SYSTEM</button>
+    </header>
+
+    <section class="panel status-panel">
+        <div class="status-module blue-module">
+            <div class="status-label">TEMPO / RODADA</div>
+            <div class="counter-control">
+                <button class="btn-icon" onclick="game.updateCounter('turn', -1)">-</button>
+                <div id="turn-display" class="status-value glitch-text">15</div>
+                <button class="btn-icon" onclick="game.updateCounter('turn', 1)">+</button>
+            </div>
+        </div>
+        <div class="status-module red-module">
+            <div class="status-label">AUTODESTRUIÇÃO</div>
+            <div class="counter-control">
+                <button class="btn-icon danger" onclick="game.toggleSelfDestruct()">I/O</button>
+                <div id="sd-display" class="status-value danger-text">OFF</div>
+                <div class="mini-controls" id="sd-controls" style="display:none">
+                   <button class="btn-mini" onclick="game.updateCounter('selfDestruct', 1)">+</button>
+                   <button class="btn-mini" onclick="game.updateCounter('selfDestruct', -1)">-</button>
+                </div>
+            </div>
+            <div class="status-sublabel">T-MINUS (0 = DETONAÇÃO)</div>
+        </div>
+    </section>
+
+    <section class="panel combat-panel">
+        <h3 class="panel-header" style="color: #ff2a2a; border-color: #ff2a2a;">
+            SISTEMA DE COMBATE
+            <span style="float:right; font-size: 0.7rem; color: #666;">
+                DECK ATAQUE: <span id="attack-deck-count" style="color:var(--neon-red)">20</span>
+            </span>
+        </h3>
+        
+        <button class="btn-health-check w-100" onclick="ui.triggerHealthCheck()">
+            🔫 DANO DO JOGADOR (VERIFICAR VIDA)
+        </button>
+
+        <div class="separator-text">- OU SELECIONE QUEM ESTÁ ATACANDO -</div>
+        
+        <div class="combat-grid">
+            <button class="btn-combat" onclick="ui.triggerAttack('Larva')">LARVA</button>
+            <button class="btn-combat" onclick="ui.triggerAttack('Rastejadora')">RASTEJ.</button>
+            <button class="btn-combat" onclick="ui.triggerAttack('Adulto')">ADULTA</button>
+            <button class="btn-combat" onclick="ui.triggerAttack('Reprodutora')">REPROD.</button>
+            <button class="btn-combat" onclick="ui.triggerAttack('Rainha')">RAINHA</button>
+        </div>
+
+        <div id="combat-result" class="combat-display hidden">
+            <div class="combat-header">
+                <span id="attacker-name">ALVO</span>
+                <span style="float:right; font-size:0.6rem">ID: <span id="atk-id">00</span></span>
+            </div>
+            
+            <div class="combat-flex-row">
+                <div class="hp-display">
+                    <span class="hp-label">RESISTÊNCIA</span>
+                    <span id="card-hp-value" class="hp-value">0</span>
+                </div>
+                
+                <div class="card-info-col">
+                    <div id="attack-card-name" class="combat-card-title"></div>
+                    <div id="attack-effect" class="attack-text">...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel encounter-panel">
+        <h3 class="panel-header" style="color: #ff9d00; border-color: #ff9d00;">ALERTA DE PROXIMIDADE</h3>
+        <div class="encounter-controls">
+            <button id="btn-encounter" class="btn-warning w-100">⚠️ GERAR ENCONTRO / RUÍDO</button>
+        </div>
+        <div id="encounter-result-area" class="encounter-display hidden">
+            <div class="scan-line-anim"></div>
+            <span class="label">RESULTADO DO SCAN:</span>
+            <div id="encounter-icon" class="encounter-icon-display"></div>
+            <div id="encounter-token-name" class="token-large">...</div>
+            <div id="encounter-action-text" class="action-small">...</div>
+        </div>
+    </section>
+
+    <section class="panel event-panel">
+        <h3 class="panel-header">
+            FASE DE EVENTOS
+            <span style="float:right; font-size: 0.7rem; color: #666;">DECK EVENTOS: <span id="deck-count" style="color:var(--neon-blue)">--</span></span>
+        </h3>
+        
+        <div id="step-1" class="step-box active">
+            <div class="step-indicator">PASSO 1/3: MANUTENÇÃO</div>
+            <div class="checklist-box">
+                <p>Verificar Intrusoras em <strong>COMBATE</strong></p>
+                <p>Verificar danos por <strong>FOGO</strong></p>
+            </div>
+            <button class="w-100 btn-primary" id="btn-step-2">CONFIRMAR E COMPRAR CARTA</button>
+        </div>
+
+        <div id="step-2" class="step-box">
+            <div class="step-indicator">PASSO 2/3: DADOS DO EVENTO</div>
+            <div id="card-output" class="card-display"></div>
+            <button class="w-100 btn-primary" id="btn-step-3">RESOLVER BOLSA</button>
+        </div>
+
+        <div id="step-3" class="step-box">
+            <div class="step-indicator">PASSO 3/3: DESENVOLVIMENTO</div>
+            <div id="bag-dev-result" class="bag-result"></div>
+            <div class="alert-box">Ao finalizar, o Tempo diminuirá e a Autodestruição avançará (se ativa).</div>
+            <button class="w-100 btn-primary" id="btn-finish-phase">FINALIZAR FASE</button>
+        </div>
+    </section>
+
+    <section class="panel bag-panel">
+        <h3 class="panel-header">
+            SENSORES BIOLÓGICOS
+            <span id="total-tokens" class="stat-counter">0 ASSINATURAS</span>
+        </h3>
+        <div class="bag-grid" id="bag-ui"></div>
+        <div class="control-bar">
+            <button class="btn-outline small" id="btn-toggle-edit">MODO MANUAL</button>
+        </div>
+    </section>
+
+    <footer>TERMINAL ID: 4892-A // OFFICIAL USE ONLY</footer>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>

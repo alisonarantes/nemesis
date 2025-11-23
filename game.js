@@ -1,171 +1,65 @@
 /**
- * NEMESIS COMPANION - CORE LOGIC v8.0 (MULTI-MOVE ICONS)
+ * NEMESIS COMPANION - CORE LOGIC v9.2 (DECK COUNT FIXED)
  */
 
-// --- CONSTANTES ---
-const TOKENS = { LARVA: 'Larval', CREEPER: 'Rastejante', ADULT: 'Adulta', BREEDER: 'Reprodutora', QUEEN: 'Rainha', BLANK: 'Branco' };
+// --- 1. CONSTANTES E DEFINIÇÕES ---
 
-// --- BANCO DE DADOS: EVENTOS (Corrigido com múltiplos ícones) ---
+const TOKENS = { 
+    LARVA: 'Larval', 
+    CREEPER: 'Rastejante', 
+    ADULT: 'Adulta', 
+    BREEDER: 'Reprodutora', 
+    QUEEN: 'Rainha', 
+    BLANK: 'Branco' 
+};
+
 const EVENT_DECK_DATA = [
-    // --- DIREÇÃO 1 ---
-    { 
-        title: "ECLOSÃO", 
-        desc: "Personagens com uma Larval morrem (coloque uma Rastejante no Cômodo deles). Cada Personagem compra 4 cartas... (ver carta)", 
-        moveTypes: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], 
-        moveDir: 1 
-    },
-    { 
-        title: "VAZAMENTO DE LÍQUIDO", 
-        desc: "Se houver marcador de Defeito no Gerador, inicie Autodestruição. REMOVA e embaralhe.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], 
-        moveDir: 1, 
-        special: "remove_shuffle" 
-    },
-    { 
-        title: "REGENERAÇÃO", 
-        desc: "Cada Intrusora no tabuleiro tem 2 Danos Curados.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], 
-        moveDir: 1 
-    },
-    { 
-        title: "CONTENÇÕES ABERTAS", 
-        desc: "Abra todas as Portas (exceto Portas Destruídas).", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], 
-        moveDir: 1 
-    },
-    { 
-        title: "INCÊNDIO DESTRUIDOR", 
-        desc: "Espalha Fogo e Defeito baseado em Fogo existente.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], 
-        moveDir: 1 
-    },
-
-    // --- DIREÇÃO 2 ---
-    { 
-        title: "CAÇADA", 
-        desc: "Desloque Intrusora Adulta para Cômodo com Personagem ou menor número.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], 
-        moveDir: 2 
-    },
-    { 
-        title: "DANO", 
-        desc: "Coloque Defeito em cada Cômodo com Intrusora Adulta, Reprodutora ou Rainha.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], 
-        moveDir: 2 
-    },
-    { 
-        title: "DEFEITO", 
-        desc: "Defeito no Cômodo explorado de menor número. Embaralhe esta carta de volta.", 
-        moveTypes: [TOKENS.QUEEN], 
-        moveDir: 2, 
-        special: "return_shuffle" 
-    },
-    { 
-        title: "FALHA DO SUPORTE", 
-        desc: "Defeito em cada Cômodo Verde explorado. REMOVA e embaralhe.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], 
-        moveDir: 2, 
-        special: "remove_shuffle" 
-    },
-    { 
-        title: "PROTEÇÃO DOS OVOS", 
-        desc: "Encontro para cada Personagem no Ninho ou carregando Ovo.", 
-        moveTypes: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], 
-        moveDir: 2 
-    },
-
-    // --- DIREÇÃO 3 ---
-    { 
-        title: "RASTRO DA PRESA", 
-        desc: "Ruído em corredores conectados a Personagens com Gosma.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], 
-        moveDir: 3 
-    },
-    { 
-        title: "INCUBAÇÃO", 
-        desc: "Descarte 1 Ovo. Personagens no Ninho sem cartas na mão são Infestados.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], 
-        moveDir: 3 
-    },
-    { 
-        title: "CAÇADA (REPROD.)", 
-        desc: "Desloque Intrusora Adulta para Cômodo com Personagem.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], 
-        moveDir: 3 
-    },
-    { 
-        title: "NINHO", 
-        desc: "Se Ninho explorado, Ruído em todos corredores conectados.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], 
-        moveDir: 3 
-    },
-    { 
-        title: "EJEÇÃO DA CÁPSULA", 
-        desc: "Lance a Cápsula de menor número. REMOVA e embaralhe.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], 
-        moveDir: 3, 
-        special: "remove_shuffle" 
-    },
-
-    // --- DIREÇÃO 4 ---
-    { 
-        title: "À ESPREITA", 
-        desc: "Remova Intrusoras que não estão com Personagens para o banco.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], 
-        moveDir: 4 
-    },
-    { 
-        title: "COMPONENTES INFLAMÁVEIS", 
-        desc: "Fogo no Hibernatório e adjacentes.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], 
-        moveDir: 4 
-    },
-    { 
-        title: "INCÊNDIO ARDENTE", 
-        desc: "Zere itens de salas com Fogo. Espalhe Fogo.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], 
-        moveDir: 4 
-    },
-    { 
-        title: "CURTO-CIRCUITO", 
-        desc: "Defeito em Cômodos Amarelos com Computador. REMOVA e embaralhe.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], 
-        moveDir: 4, 
-        special: "remove_shuffle" 
-    },
-    { 
-        title: "RUÍDO TÉCNICO", 
-        desc: "Ruído nos Corredores Técnicos ou rolagem para quem estiver perto.", 
-        moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], 
-        moveDir: 4 
-    }
+    { title: "ECLOSÃO", desc: "Personagens com uma Larval morrem (coloque uma Rastejante no Cômodo deles). Cada Personagem compra 4 cartas do baralho de ação...", moveTypes: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], moveDir: 1 },
+    { title: "VAZAMENTO DE LÍQUIDO", desc: "Se houver marcador de Defeito no Gerador, inicie Autodestruição. REMOVA e embaralhe.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], moveDir: 1, special: "remove_shuffle" },
+    { title: "REGENERAÇÃO", desc: "Cada Intrusora no tabuleiro tem 2 Danos Curados.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], moveDir: 1 },
+    { title: "CONTENÇÕES ABERTAS", desc: "Abra todas as Portas (exceto Portas Destruídas).", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], moveDir: 1 },
+    { title: "INCÊNDIO DESTRUIDOR", desc: "Espalha Fogo e Defeito baseado em Fogo existente.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], moveDir: 1 },
+    { title: "CAÇADA", desc: "Desloque Intrusora Adulta para Cômodo com Personagem ou menor número.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], moveDir: 2 },
+    { title: "DANO", desc: "Coloque Defeito em cada Cômodo com Intrusora Adulta, Reprodutora ou Rainha.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], moveDir: 2 },
+    { title: "DEFEITO", desc: "Defeito no Cômodo explorado de menor número. Embaralhe esta carta de volta.", moveTypes: [TOKENS.QUEEN], moveDir: 2, special: "return_shuffle" },
+    { title: "FALHA DO SUPORTE", desc: "Defeito em cada Cômodo Verde explorado. REMOVA e embaralhe.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], moveDir: 2, special: "remove_shuffle" },
+    { title: "PROTEÇÃO DOS OVOS", desc: "Encontro para cada Personagem no Ninho ou carregando Ovo.", moveTypes: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], moveDir: 2 },
+    { title: "RASTRO DA PRESA", desc: "Ruído em corredores conectados a Personagens com Gosma.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], moveDir: 3 },
+    { title: "INCUBAÇÃO", desc: "Descarte 1 Ovo. Personagens no Ninho sem cartas na mão são Infestados.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], moveDir: 3 },
+    { title: "CAÇADA (REPROD.)", desc: "Desloque Intrusora Adulta para Cômodo com Personagem.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], moveDir: 3 },
+    { title: "NINHO", desc: "Se Ninho explorado, Ruído em todos corredores conectados.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], moveDir: 3 },
+    { title: "EJEÇÃO DA CÁPSULA", desc: "Lance a Cápsula de menor número. REMOVA e embaralhe.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], moveDir: 3, special: "remove_shuffle" },
+    { title: "À ESPREITA", desc: "Remova Intrusoras que não estão com Personagens para o banco.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], moveDir: 4 },
+    { title: "COMPONENTES INFLAMÁVEIS", desc: "Fogo no Hibernatório e adjacentes.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], moveDir: 4 },
+    { title: "INCÊNDIO ARDENTE", desc: "Zere itens de salas com Fogo. Espalhe Fogo.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], moveDir: 4 },
+    { title: "CURTO-CIRCUITO", desc: "Defeito em Cômodos Amarelos com Computador. REMOVA e embaralhe.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], moveDir: 4, special: "remove_shuffle" },
+    { title: "RUÍDO TÉCNICO", desc: "Ruído nos Corredores Técnicos ou rolagem para quem estiver perto.", moveTypes: [TOKENS.ADULT, TOKENS.BREEDER], moveDir: 4 }
 ];
 
-// --- BANCO DE DADOS: DECK DE ATAQUE ---
-const ATTACK_CARDS_FULL_DECK = [
-    { hp: 2, title: "ARRANHÃO", desc: "O Personagem sofre 1 Ferimento Leve e recebe 1 carta de Contaminação.", targets: [TOKENS.LARVA, TOKENS.CREEPER, TOKENS.ADULT] },
-    { hp: 3, title: "ARRANHÃO", desc: "O Personagem sofre 1 Ferimento Leve e recebe 1 carta de Contaminação.", targets: [TOKENS.LARVA, TOKENS.CREEPER, TOKENS.ADULT] },
-    { hp: 5, title: "ARRANHÃO", desc: "O Personagem sofre 1 Ferimento Leve e recebe 1 carta de Contaminação.", targets: [TOKENS.LARVA, TOKENS.CREEPER, TOKENS.ADULT] },
-    { hp: 6, title: "ARRANHÃO", desc: "O Personagem sofre 1 Ferimento Leve e recebe 1 carta de Contaminação.", targets: [TOKENS.LARVA, TOKENS.CREEPER, TOKENS.ADULT] },
-    { hp: 3, title: "ATAQUE DAS GARRAS", desc: "O Personagem sofre 2 Ferimentos Leves e recebe 1 carta de Contaminação.", targets: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER] },
-    { hp: 4, title: "ATAQUE DAS GARRAS", desc: "O Personagem sofre 2 Ferimentos Leves e recebe 1 carta de Contaminação.", targets: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER] },
-    { hp: 4, title: "ATAQUE DAS GARRAS", desc: "O Personagem sofre 2 Ferimentos Leves e recebe 1 carta de Contaminação.", targets: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER] },
-    { hp: 5, title: "ATAQUE DAS GARRAS", desc: "O Personagem sofre 2 Ferimentos Leves e recebe 1 carta de Contaminação.", targets: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER] },
-    { hp: 2, title: "ATAQUE DA CAUDA", desc: "Se o Personagem tiver pelo menos 1 Ferimento Grave, ele morre. Se não, ele sofre 1 Ferimento Grave.", targets: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN] },
-    { hp: 5, title: "ATAQUE DA CAUDA", desc: "Se o Personagem tiver pelo menos 1 Ferimento Grave, ele morre. Se não, ele sofre 1 Ferimento Grave.", targets: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN] },
-    { hp: 4, title: "MORDIDA", desc: "Se o Personagem tiver 2 Ferimentos Graves, ele morre. Se não, ele sofre 1 Ferimento Grave.", targets: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER] },
-    { hp: 4, title: "MORDIDA", desc: "Se o Personagem tiver 2 Ferimentos Graves, ele morre. Se não, ele sofre 1 Ferimento Grave.", targets: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER] },
-    { hp: 4, title: "MORDIDA", desc: "Se o Personagem tiver 2 Ferimentos Graves, ele morre. Se não, ele sofre 1 Ferimento Grave.", targets: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN] },
-    { hp: 6, title: "MORDIDA", desc: "Se o Personagem tiver 2 Ferimentos Graves, ele morre. Se não, ele sofre 1 Ferimento Grave.", targets: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN] },
-    { hp: 3, title: "INVOCAÇÃO", desc: "Compre 1 ficha de Intrusora e coloque no Cômodo. Ela não ataca nesta ação.", targets: [TOKENS.CREEPER, TOKENS.ADULT] },
-    { hp: 5, title: "GOSMA", desc: "O Personagem recebe um marcador de Gosma e 1 carta de Contaminação.", targets: [TOKENS.LARVA, TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER] },
-    { hp: 4, title: "TRANSFORMAÇÃO", desc: "Substitua a Rastejante atacante por uma Reprodutora (se disponível). Se o jogador não tiver cartas na mão, a Reprodutora faz um Ataque Surpresa.", targets: [TOKENS.CREEPER] },
-    { hp: 5, title: "TRANSFORMAÇÃO", desc: "Substitua a Rastejante atacante por uma Reprodutora (se disponível). Se o jogador não tiver cartas na mão, a Reprodutora faz um Ataque Surpresa.", targets: [TOKENS.CREEPER] },
-    { hp: 3, title: "FRENESI", desc: "Personagens com 2+ Ferimentos Graves morrem. Outros sofrem 1 Ferimento Grave.", targets: [TOKENS.ADULT, TOKENS.BREEDER] },
-    { hp: 4, title: "FRENESI", desc: "Personagens com 2+ Ferimentos Graves morrem. Outros sofrem 1 Ferimento Grave.", targets: [TOKENS.ADULT, TOKENS.BREEDER] }
+// CORREÇÃO: Count = 1 para todos, pois cada linha é uma carta única transcrita
+const ATTACK_DEFINITIONS = [
+    { hp: 2, title: "ARRANHÃO", desc: "O Personagem sofre 1 Ferimento Leve e recebe 1 carta de Contaminação.", targets: [TOKENS.LARVA, TOKENS.CREEPER, TOKENS.ADULT], count: 1 },
+    { hp: 3, title: "ARRANHÃO", desc: "O Personagem sofre 1 Ferimento Leve e recebe 1 carta de Contaminação.", targets: [TOKENS.LARVA, TOKENS.CREEPER, TOKENS.ADULT], count: 1 },
+    { hp: 5, title: "ARRANHÃO", desc: "O Personagem sofre 1 Ferimento Leve e recebe 1 carta de Contaminação.", targets: [TOKENS.LARVA, TOKENS.CREEPER, TOKENS.ADULT], count: 1 },
+    { hp: 6, title: "ARRANHÃO", desc: "O Personagem sofre 1 Ferimento Leve e recebe 1 carta de Contaminação.", targets: [TOKENS.LARVA, TOKENS.CREEPER, TOKENS.ADULT], count: 1 },
+    { hp: 3, title: "ATAQUE DAS GARRAS", desc: "O Personagem sofre 2 Ferimentos Leves e recebe 1 carta de Contaminação.", targets: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER], count: 1 },
+    { hp: 4, title: "ATAQUE DAS GARRAS", desc: "O Personagem sofre 2 Ferimentos Leves e recebe 1 carta de Contaminação.", targets: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER], count: 1 },
+    { hp: 4, title: "ATAQUE DAS GARRAS", desc: "O Personagem sofre 2 Ferimentos Leves e recebe 1 carta de Contaminação.", targets: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER], count: 1 },
+    { hp: 5, title: "ATAQUE DAS GARRAS", desc: "O Personagem sofre 2 Ferimentos Leves e recebe 1 carta de Contaminação.", targets: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER], count: 1 },
+    { hp: 2, title: "ATAQUE DA CAUDA", desc: "Se o Personagem tiver pelo menos 1 Ferimento Grave, ele morre. Se não, ele sofre 1 Ferimento Grave.", targets: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], count: 1 },
+    { hp: 5, title: "ATAQUE DA CAUDA", desc: "Se o Personagem tiver pelo menos 1 Ferimento Grave, ele morre. Se não, ele sofre 1 Ferimento Grave.", targets: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], count: 1 },
+    { hp: 4, title: "MORDIDA", desc: "Se o Personagem tiver 2 Ferimentos Graves, ele morre. Se não, ele sofre 1 Ferimento Grave.", targets: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER], count: 1 },
+    { hp: 4, title: "MORDIDA", desc: "Se o Personagem tiver 2 Ferimentos Graves, ele morre. Se não, ele sofre 1 Ferimento Grave.", targets: [TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER], count: 1 },
+    { hp: 4, title: "MORDIDA", desc: "Se o Personagem tiver 2 Ferimentos Graves, ele morre. Se não, ele sofre 1 Ferimento Grave.", targets: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], count: 1 },
+    { hp: 6, title: "MORDIDA", desc: "Se o Personagem tiver 2 Ferimentos Graves, ele morre. Se não, ele sofre 1 Ferimento Grave.", targets: [TOKENS.ADULT, TOKENS.BREEDER, TOKENS.QUEEN], count: 1 },
+    { hp: 3, title: "INVOCAÇÃO", desc: "Compre 1 ficha de Intrusora e coloque no Cômodo. Ela não ataca nesta ação.", targets: [TOKENS.CREEPER, TOKENS.ADULT], count: 1 },
+    { hp: 5, title: "GOSMA", desc: "O Personagem recebe um marcador de Gosma e 1 carta de Contaminação.", targets: [TOKENS.LARVA, TOKENS.CREEPER, TOKENS.ADULT, TOKENS.BREEDER], count: 1 },
+    { hp: 4, title: "TRANSFORMAÇÃO", desc: "Substitua a Rastejante atacante por uma Reprodutora. Se jogador sem cartas, Ataque Surpresa.", targets: [TOKENS.CREEPER], count: 1 },
+    { hp: 5, title: "TRANSFORMAÇÃO", desc: "Substitua a Rastejante atacante por uma Reprodutora. Se jogador sem cartas, Ataque Surpresa.", targets: [TOKENS.CREEPER], count: 1 },
+    { hp: 3, title: "FRENESI", desc: "Personagens com 2+ Ferimentos Graves morrem. Outros sofrem 1 Ferimento Grave.", targets: [TOKENS.ADULT, TOKENS.BREEDER], count: 1 },
+    { hp: 4, title: "FRENESI", desc: "Personagens com 2+ Ferimentos Graves morrem. Outros sofrem 1 Ferimento Grave.", targets: [TOKENS.ADULT, TOKENS.BREEDER], count: 1 }
 ];
 
-// --- ÍCONES SVG ---
 const getSvgIcon = (type) => {
     const baseClass = "token-svg";
     let path = "";
@@ -180,29 +74,52 @@ const getSvgIcon = (type) => {
     return `<svg viewBox="0 0 100 100" class="${baseClass} token-${type.toLowerCase()}">${path}</svg>`;
 };
 
+// --- 3. LÓGICA DO JOGO ---
+
 class NemesisGame {
     constructor() {
         this.state = {
-            bag: [], deck: [], discard: [], attackDeck: [], attackDiscard: [],
+            bag: [], deck: [], discard: [], 
+            attackDeck: [], attackDiscard: [],
             step: 1, turn: 15, selfDestruct: null
         };
-        this.loadState();
     }
 
-    initNewGame() {
-        let players = 4;
-        const input = prompt("NÚMERO DE TRIPULANTES? (1-5)", "4");
-        if (input) players = parseInt(input) || 4;
+    startGame(players) {
+        document.getElementById('setup-screen').classList.add('hidden');
+        document.getElementById('main-interface').classList.remove('hidden');
+        
+        const saved = localStorage.getItem('nemesis_os_v92');
+        if (saved) {
+            if(confirm("Jogo salvo encontrado. Continuar? (Cancelar = Novo Jogo)")) {
+                this.state = JSON.parse(saved);
+                ui.updateAll(this.state);
+                return;
+            }
+        }
+        this.initNewGame(players);
+    }
 
+    initNewGame(players) {
         this.state.bag = [TOKENS.BLANK, TOKENS.QUEEN, TOKENS.BREEDER, TOKENS.CREEPER, TOKENS.LARVA, TOKENS.LARVA, TOKENS.LARVA, TOKENS.LARVA];
-        let adults = (players <= 2) ? 3 : (players === 3 ? 4 : 5);
+        
+        // Regra Padrão de Adultos (Ex: 3 Jogadores = +4 Adultas)
+        let adults = 0;
+        if (players <= 2) adults = 3; 
+        else if (players === 3) adults = 4; 
+        else adults = 5; // 4 ou 5 jogadores (Regra base aproximada)
+        
         for (let i = 0; i < adults; i++) this.state.bag.push(TOKENS.ADULT);
 
         this.state.deck = [...EVENT_DECK_DATA];
         this.shuffle(this.state.deck);
         this.state.discard = [];
         
-        this.state.attackDeck = [...ATTACK_CARDS_FULL_DECK];
+        this.state.attackDeck = [];
+        // Como o count agora é 1, isso vai gerar exatamente 20 cartas
+        ATTACK_DEFINITIONS.forEach(def => {
+            for(let i=0; i<def.count; i++) this.state.attackDeck.push(def);
+        });
         this.shuffle(this.state.attackDeck);
         this.state.attackDiscard = [];
 
@@ -210,13 +127,8 @@ class NemesisGame {
         this.saveState();
     }
 
-    loadState() {
-        const saved = localStorage.getItem('nemesis_os_v8');
-        if (saved) { this.state = JSON.parse(saved); } else { this.initNewGame(); }
-    }
-
     saveState() {
-        localStorage.setItem('nemesis_os_v8', JSON.stringify(this.state));
+        localStorage.setItem('nemesis_os_v92', JSON.stringify(this.state));
         ui.updateAll(this.state);
     }
 
@@ -225,25 +137,6 @@ class NemesisGame {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
         }
-    }
-
-    drawAttackCard() {
-        if (this.state.attackDeck.length === 0) {
-            this.state.attackDeck = [...this.state.attackDiscard];
-            this.state.attackDiscard = [];
-            this.shuffle(this.state.attackDeck);
-        }
-        const card = this.state.attackDeck.pop();
-        this.state.attackDiscard.push(card);
-        this.saveState();
-        return card;
-    }
-
-    resolveIntruderAttack(intruderType) {
-        const card = this.drawAttackCard();
-        const isHit = card.targets.includes(intruderType);
-        let effectText = isHit ? card.desc : "ERROU! Símbolo não corresponde.";
-        return { card: card, effect: effectText, isHit: isHit };
     }
 
     triggerEncounter() {
@@ -310,6 +203,25 @@ class NemesisGame {
         this.saveState();
     }
 
+    drawAttackCard() {
+        if (this.state.attackDeck.length === 0) {
+            this.state.attackDeck = [...this.state.attackDiscard];
+            this.state.attackDiscard = [];
+            this.shuffle(this.state.attackDeck);
+        }
+        const card = this.state.attackDeck.pop();
+        this.state.attackDiscard.push(card);
+        this.saveState();
+        return card;
+    }
+
+    resolveIntruderAttack(intruderType) {
+        const card = this.drawAttackCard();
+        const isHit = card.targets.includes(intruderType);
+        let effectText = isHit ? card.desc : "ERROU! O símbolo da Intrusora não corresponde.";
+        return { card: card, effect: effectText, isHit: isHit };
+    }
+
     toggleSelfDestruct() {
         if (this.state.selfDestruct === null) { this.state.selfDestruct = 6; } 
         else { this.state.selfDestruct = null; }
@@ -329,25 +241,62 @@ class NemesisGame {
         }
         this.saveState();
     }
+
     setStep(val) { this.state.step = val; this.saveState(); }
 }
 
+// --- 4. UI MANAGER ---
+
 const ui = {
-    game: null, manualMode: false,
+    game: null, manualMode: false, bagVisible: false,
 
     init: (g) => {
         ui.game = g;
-        document.getElementById('btn-reset').onclick = () => { if(confirm("REINICIAR SISTEMA?")) { ui.game.initNewGame(); ui.goToStep(1); }};
+        document.getElementById('btn-reset').onclick = () => { if(confirm("TEM CERTEZA? ISSO APAGARÁ TODO O PROGRESSO.")) { localStorage.removeItem('nemesis_os_v92'); location.reload(); }};
+        
         document.getElementById('btn-toggle-edit').onclick = () => { ui.manualMode = !ui.manualMode; ui.updateAll(ui.game.state); };
         document.getElementById('btn-encounter').onclick = () => { const res = ui.game.triggerEncounter(); if(res.token) ui.renderEncounterResult(res); };
-        document.getElementById('btn-step-2').onclick = () => { const card = ui.game.drawEventCard(); ui.renderCard(card); ui.goToStep(2); };
-        document.getElementById('btn-step-3').onclick = () => { const res = ui.game.resolveBag(); ui.renderBagResult(res); ui.goToStep(3); };
+        
+        document.getElementById('btn-step-2').onclick = () => { ui.changeStep(2); const card = ui.game.drawEventCard(); ui.renderCard(card); };
+        document.getElementById('btn-step-3').onclick = () => { ui.changeStep(3); const res = ui.game.resolveBag(); ui.renderBagResult(res); };
         document.getElementById('btn-finish-phase').onclick = () => {
             ui.game.updateCounter('turn', -1);
             if(ui.game.state.selfDestruct !== null && ui.game.state.selfDestruct > 0) { ui.game.updateCounter('selfDestruct', -1); }
-            ui.goToStep(1);
+            ui.changeStep(1);
         };
-        ui.updateAll(ui.game.state); ui.goToStep(ui.game.state.step);
+
+        const saved = localStorage.getItem('nemesis_os_v92');
+        if(saved) {
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('main-interface').classList.remove('hidden');
+            ui.game.state = JSON.parse(saved);
+            ui.updateAll(ui.game.state);
+        }
+    },
+
+    changeStep: (n) => { ui.game.setStep(n); ui.renderStep(n); },
+
+    renderStep: (n) => {
+        document.querySelectorAll('.step-box').forEach(e => e.classList.remove('active'));
+        const el = document.getElementById(`step-${n}`);
+        if(el) el.classList.add('active');
+        if (n === 1) {
+            document.getElementById('card-output').innerHTML = '';
+            document.getElementById('bag-dev-result').innerHTML = '';
+        }
+    },
+
+    toggleBagVisibility: () => {
+        if (!ui.bagVisible) { if (confirm("Deseja revelar os dados da bolsa?")) ui.bagVisible = true; } 
+        else { ui.bagVisible = false; }
+        ui.updateBagVisibility();
+    },
+
+    updateBagVisibility: () => {
+        const overlay = document.getElementById('bag-overlay');
+        const content = document.getElementById('bag-content');
+        if (ui.bagVisible) { overlay.classList.add('hidden'); content.classList.remove('hidden'); } 
+        else { overlay.classList.remove('hidden'); content.classList.add('hidden'); }
     },
 
     triggerHealthCheck: () => {
@@ -362,7 +311,6 @@ const ui = {
         if(typeKey === 'Adulto') intruderType = TOKENS.ADULT;
         if(typeKey === 'Reprodutora') intruderType = TOKENS.BREEDER;
         if(typeKey === 'Rainha') intruderType = TOKENS.QUEEN;
-
         const result = ui.game.resolveIntruderAttack(intruderType);
         ui.renderCombatResult(result.card, `ATACANTE: ${intruderType.toUpperCase()}`, result.effect, result.isHit);
     },
@@ -371,25 +319,14 @@ const ui = {
         const display = document.getElementById('combat-result');
         display.classList.remove('hidden');
         document.getElementById('attacker-name').innerText = title;
-        document.getElementById('atk-id').innerText = Math.floor(Math.random() * 99);
         document.getElementById('card-hp-value').innerText = card.hp;
         document.getElementById('attack-card-name').innerText = card.title.toUpperCase();
         const textEl = document.getElementById('attack-effect');
         textEl.innerText = effectText;
-        if(isHit) { textEl.style.color = "var(--neon-red)"; display.style.borderColor = "var(--neon-red)"; document.getElementById('card-hp-value').style.color = "var(--neon-red)"; } 
-        else { textEl.style.color = "#aaa"; display.style.borderColor = "#444"; document.getElementById('card-hp-value').style.color = "#888"; }
+        const hpEl = document.getElementById('card-hp-value');
+        if(isHit) { textEl.style.color = "var(--neon-red)"; hpEl.style.color = "var(--neon-red)"; display.style.borderColor = "var(--neon-red)"; } 
+        else { textEl.style.color = "#aaa"; hpEl.style.color = "#888"; display.style.borderColor = "#444"; }
         document.getElementById('attack-deck-count').innerText = ui.game.state.attackDeck.length;
-    },
-
-    goToStep: (n) => {
-        ui.game.setStep(n);
-        document.querySelectorAll('.step-box').forEach(e => e.classList.remove('active'));
-        document.getElementById(`step-${n}`).classList.add('active');
-        if (n === 1) {
-            document.getElementById('card-output').innerHTML = '';
-            document.getElementById('bag-dev-result').innerHTML = '';
-            document.getElementById('combat-result').classList.add('hidden');
-        }
     },
 
     updateAll: (state) => {
@@ -398,14 +335,14 @@ const ui = {
         const sdControls = document.getElementById('sd-controls');
         if (state.selfDestruct === null) { sdEl.innerText = "OFF"; sdEl.style.color = "#444"; sdControls.style.display = 'none'; } 
         else { sdEl.innerText = state.selfDestruct; sdEl.style.color = state.selfDestruct === 0 ? "#fff" : "var(--neon-red)"; sdControls.style.display = 'flex'; }
-
+        
         document.getElementById('deck-count').innerText = state.deck.length;
-        const atkCount = document.getElementById('attack-deck-count');
-        if(atkCount) atkCount.innerText = state.attackDeck.length;
+        if(document.getElementById('attack-deck-count')) document.getElementById('attack-deck-count').innerText = state.attackDeck.length;
 
         const counts = {};
         Object.values(TOKENS).forEach(t => counts[t] = 0);
         state.bag.forEach(t => counts[t] = (counts[t] || 0) + 1);
+        
         const container = document.getElementById('bag-ui');
         container.innerHTML = '';
         Object.keys(counts).forEach(key => {
@@ -416,25 +353,18 @@ const ui = {
             container.appendChild(div);
         });
         document.getElementById('total-tokens').innerText = `ASSINATURAS: ${state.bag.length}`;
+        
         if(ui.manualMode) { document.querySelectorAll('.bag-controls button').forEach(b => { b.onclick = (e) => { ui.game.modifyBag(e.target.dataset.token, parseInt(e.target.dataset.delta)); }; }); }
+        
+        ui.renderStep(state.step);
     },
 
     renderCard: (c) => { 
-        // Renderiza Múltiplos ícones de movimento
-        const iconsHtml = c.moveTypes.map(t => `<div class="mini-icon">${getSvgIcon(t)}</div>`).join('');
-        document.getElementById('card-output').innerHTML = `
-            <div class="card-title">${c.title}</div>
-            <div class="card-desc">${c.desc}</div>
-            <div class="card-move">
-                <div class="move-label">MOVIMENTO:</div>
-                <div class="card-move-icons">${iconsHtml}</div>
-                <div class="move-dir">DIREÇÃO: <span>${c.moveDir}</span></div>
-            </div>`; 
+        const iconsHtml = (c.moveTypes || []).map(t => `<div class="mini-icon">${getSvgIcon(t)}</div>`).join('');
+        document.getElementById('card-output').innerHTML = `<div class="card-title">${c.title}</div><div class="card-desc">${c.desc}</div><div class="card-move"><div class="move-label">MOVIMENTO:</div><div class="card-move-icons">${iconsHtml}</div><div class="move-dir">DIREÇÃO: <span>${c.moveDir}</span></div></div>`; 
     },
     
-    renderBagResult: (r) => { 
-        document.getElementById('bag-dev-result').innerHTML = `<div class="result-icon-large">${getSvgIcon(r.token)}</div><span class="result-token">${r.token.toUpperCase()}</span><div>${r.text}</div>`; 
-    },
+    renderBagResult: (r) => { document.getElementById('bag-dev-result').innerHTML = `<div class="result-icon-large">${getSvgIcon(r.token)}</div><span class="result-token">${r.token.toUpperCase()}</span><div>${r.text}</div>`; },
     
     renderEncounterResult: (r) => {
         const area = document.getElementById('encounter-result-area');
@@ -442,15 +372,13 @@ const ui = {
         document.getElementById('encounter-icon').innerHTML = getSvgIcon(r.token);
         document.getElementById('encounter-token-name').innerText = r.token.toUpperCase();
         document.getElementById('encounter-action-text').innerText = r.text;
-        if (r.token === TOKENS.BLANK) { 
-            document.getElementById('encounter-token-name').style.color = "#fff"; area.style.borderColor = "#fff"; 
-            document.querySelector('#encounter-result-area svg').style.color = "#fff";
-        } else { 
-            document.getElementById('encounter-token-name').style.color = "var(--neon-red)"; area.style.borderColor = "var(--neon-red)"; 
-            document.querySelector('#encounter-result-area svg').style.color = "var(--neon-red)";
-        }
+        const color = (r.token === TOKENS.BLANK) ? "#fff" : "var(--neon-red)";
+        document.getElementById('encounter-token-name').style.color = color;
+        area.style.borderColor = color;
+        document.querySelector('#encounter-result-area svg').style.color = color;
     }
 };
 
+// INICIALIZAÇÃO
 const game = new NemesisGame();
 ui.init(game);

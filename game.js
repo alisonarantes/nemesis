@@ -1,5 +1,5 @@
 /**
- * NEMESIS COMPANION - CORE LOGIC v10.0 (GAME MASTER FEATURES)
+ * NEMESIS COMPANION - CORE LOGIC v10.2 (GAME OVER TRIGGERS)
  */
 
 // --- DADOS ---
@@ -93,7 +93,7 @@ class NemesisGame {
         document.getElementById('setup-screen').classList.add('hidden');
         document.getElementById('main-interface').classList.remove('hidden');
         
-        const saved = localStorage.getItem('nemesis_os_v10');
+        const saved = localStorage.getItem('nemesis_os_v102');
         if (saved) {
             if(confirm("Jogo salvo encontrado. Continuar?")) {
                 this.state = JSON.parse(saved);
@@ -126,7 +126,7 @@ class NemesisGame {
     }
 
     saveState() {
-        localStorage.setItem('nemesis_os_v10', JSON.stringify(this.state));
+        localStorage.setItem('nemesis_os_v102', JSON.stringify(this.state));
         ui.updateAll(this.state);
     }
 
@@ -150,7 +150,6 @@ class NemesisGame {
             message = "INTRUSORA DETECTADA! Token removido."; 
             removed = true;
             
-            // GATILHO 1: PRIMEIRO ENCONTRO
             if (!this.state.flags.firstEncounter) {
                 ui.showAlert("PRIMEIRO ENCONTRO DETECTADO", "MOMENTO CRÍTICO: Todos os jogadores devem escolher 1 Objetivo e descartar o outro agora.");
                 this.state.flags.firstEncounter = true;
@@ -163,7 +162,7 @@ class NemesisGame {
     reportDeath() {
         if(!this.state.flags.firstDeath) {
             this.state.flags.firstDeath = true;
-            ui.showAlert("ÓBITO REGISTRADO", "MOMENTO CRÍTICO: O primeiro tripulante morreu. TODAS as Cápsulas de Fuga estão destravadas automaticamente.");
+            ui.showAlert("ÓBITO REGISTRADO", "MOMENTO CRÍTICO: O primeiro tripulante morreu. TODAS as Cápsulas de Fuga estão DESTRAVADAS automaticamente.");
             this.saveState();
         } else {
             alert("Morte já registrada anteriormente. Cápsulas já estão destravadas.");
@@ -192,7 +191,6 @@ class NemesisGame {
             this.state.discard.push(card);
         }
 
-        // Regra de suporte de vida
         if (card.title.includes("FALHA DO SUPORTE") || card.title.includes("SUPORTE DE VIDA")) {
             this.updateCounter('turn', -1);
         }
@@ -248,7 +246,7 @@ class NemesisGame {
 
     toggleSelfDestruct() {
         if (this.state.selfDestruct === null) { 
-            this.state.selfDestruct = 6; // Inicia amarelo geralmente
+            this.state.selfDestruct = 6; 
             this.checkSelfDestructTrigger();
         } else { 
             this.state.selfDestruct = null; 
@@ -262,7 +260,12 @@ class NemesisGame {
             if (this.state.turn < 0) this.state.turn = 0;
             if (this.state.turn > 15) this.state.turn = 15;
             
-            // GATILHO 2: TRILHA DE TEMPO (9 -> 8)
+            // FIM DE JOGO: TEMPO ACABOU
+            if (this.state.turn === 0) {
+                ui.showAlert("FIM DE JOGO", "A trilha de tempo chegou a ZERO. A nave saltou para o hiperespaço.\n\nVerifique as condições de vitória (Motores/Coordenadas/Contaminação).");
+            }
+            
+            // ALERTA DE HIBERNAÇÃO (9 -> 8)
             if (this.state.turn === 8 && !this.state.flags.hibernationAlert) {
                 ui.showAlert("CÂMARAS ABERTAS", "ATENÇÃO: A nave entrou na zona AZUL (Turno 8). As Câmaras de Hibernação estão ABERTAS.");
                 this.state.flags.hibernationAlert = true;
@@ -272,6 +275,12 @@ class NemesisGame {
             if (this.state.selfDestruct !== null) {
                 this.state.selfDestruct += delta;
                 if (this.state.selfDestruct < 0) this.state.selfDestruct = 0;
+                
+                // FIM DE JOGO: EXPLOSÃO
+                if (this.state.selfDestruct === 0) {
+                    ui.showAlert("FIM DE JOGO", "A sequência de autodestruição foi concluída.\n\nA NAVE EXPLODIU.");
+                }
+                
                 this.checkSelfDestructTrigger();
             }
         }
@@ -279,9 +288,10 @@ class NemesisGame {
     }
 
     checkSelfDestructTrigger() {
-        // GATILHO 3: AUTODESTRUIÇÃO AMARELA (<= 6)
-        if (this.state.selfDestruct !== null && this.state.selfDestruct <= 6 && !this.state.flags.podUnlockAlert) {
-            ui.showAlert("ALERTA DE DESTRUIÇÃO", "A Autodestruição entrou na zona crítica. TODAS as Cápsulas de Fuga estão DESTRAVADAS.");
+        // GATILHO 3: AUTODESTRUIÇÃO AMARELA (<= 3)
+        // Ajuste: Só avisa se for 3 ou menos, e ainda não tiver explodido (0)
+        if (this.state.selfDestruct !== null && this.state.selfDestruct <= 3 && this.state.selfDestruct > 0 && !this.state.flags.podUnlockAlert) {
+            ui.showAlert("ALERTA DE DESTRUIÇÃO", "A Autodestruição entrou na zona crítica (AMARELA). TODAS as Cápsulas de Fuga estão DESTRAVADAS.");
             this.state.flags.podUnlockAlert = true;
         }
     }
@@ -299,7 +309,7 @@ const ui = {
         const date = new Date().toISOString().split('T')[0];
         document.getElementById('app-footer').innerText = `TERMINAL ID: ${date}`;
 
-        document.getElementById('btn-reset').onclick = () => { if(confirm("Apagar progresso?")) { localStorage.removeItem('nemesis_os_v10'); location.reload(); }};
+        document.getElementById('btn-reset').onclick = () => { if(confirm("Apagar progresso?")) { localStorage.removeItem('nemesis_os_v102'); location.reload(); }};
         document.getElementById('btn-toggle-edit').onclick = () => { ui.manualMode = !ui.manualMode; ui.updateAll(ui.game.state); };
         document.getElementById('btn-encounter').onclick = () => { const res = ui.game.triggerEncounter(); if(res.token) ui.renderEncounterResult(res); };
         document.getElementById('btn-step-2').onclick = () => { ui.changeStep(2); const card = ui.game.drawEventCard(); ui.renderCard(card); };
@@ -310,7 +320,7 @@ const ui = {
             ui.changeStep(1);
         };
 
-        const saved = localStorage.getItem('nemesis_os_v10');
+        const saved = localStorage.getItem('nemesis_os_v102');
         if(saved) {
             document.getElementById('setup-screen').classList.add('hidden');
             document.getElementById('main-interface').classList.remove('hidden');
@@ -319,10 +329,8 @@ const ui = {
         }
     },
 
-    // MODAIS
     openRoomModal: () => {
         document.getElementById('room-modal').classList.remove('hidden');
-        // Popula lista
         const t1 = document.getElementById('rooms-tier-1');
         const t2 = document.getElementById('rooms-tier-2');
         t1.innerHTML = ROOM_DB.tier1.map(r => `<div class="room-item"><strong>${r.name}</strong><br>${r.desc}</div>`).join('');
@@ -381,7 +389,6 @@ const ui = {
         document.getElementById('deck-count').innerText = state.deck.length;
         if(document.getElementById('attack-deck-count')) document.getElementById('attack-deck-count').innerText = state.attackDeck.length;
 
-        // Bag List (Texto apenas)
         const counts = {};
         Object.values(TOKENS).forEach(t => counts[t] = 0);
         state.bag.forEach(t => counts[t] = (counts[t] || 0) + 1);
